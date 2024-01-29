@@ -3,6 +3,7 @@ package com.palette.back_end.entity;
 import com.palette.back_end.entity.enums.ArtTypes;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
@@ -10,6 +11,7 @@ import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "artwork_types")
