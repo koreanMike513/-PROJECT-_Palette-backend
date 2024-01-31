@@ -25,7 +25,7 @@ public class Portfolio extends BaseEntity {
 
   @ManyToOne
   @JoinColumn(name = "artist_id")
-  private Artist artist;
+  private User user;
 
   @Setter
   @Column(columnDefinition = "VARCHAR(55) NOT NULL COMMENT '제목'")

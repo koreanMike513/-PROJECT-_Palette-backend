@@ -1,6 +1,5 @@
 package com.palette.back_end.entity;
 
-import com.palette.back_end.entity.enums.UserTypes;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
@@ -21,16 +20,11 @@ public class Client extends BaseEntity {
   @Column(nullable = false, updatable = false)
   private Long clientId;
 
-  @Setter
-  @Column(columnDefinition = "VARCHAR(55) NOT NULL COMMENT '닉네임'")
-  private String userName;
+  @OneToOne
+  @JoinColumn(name = "user_id")
+  private User userId;
 
   @Setter
-  @Enumerated(EnumType.STRING)
-  @Column(columnDefinition = "VARCHAR(20) NOT NULL COMMENT '유저 타입'")
-  private UserTypes userTypes;
-
-  @Setter
-  @Column(columnDefinition = "VARCHAR(55) NOT NULL COMMENT '이메일'")
-  private String email;
+  @Column(columnDefinition = "NOT NULL DEFAULT FALSE COMMENT '인증'")
+  private boolean isAuthorized;
 }
