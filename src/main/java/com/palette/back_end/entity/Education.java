@@ -23,8 +23,8 @@ public class Education extends BaseEntity {
   private Long educationId;
 
   @ManyToOne
-  @JoinColumn(name = "artist_id")
-  private Artist artist;
+  @JoinColumn(name = "user_id")
+  private User user;
 
   @Setter
   @Column(columnDefinition = "VARCHAR(55) NOT NULL COMMENT '학교'")
