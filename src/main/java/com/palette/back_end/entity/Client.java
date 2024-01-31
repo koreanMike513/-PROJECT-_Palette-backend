@@ -25,6 +25,6 @@ public class Client extends BaseEntity {
   private User userId;
 
   @Setter
-  @Column(columnDefinition = "NOT NULL DEFAULT FALSE COMMENT '인증'")
+  @Column(columnDefinition = "BOOLEAN NOT NULL DEFAULT FALSE COMMENT '인증'")
   private boolean isAuthorized;
 }
