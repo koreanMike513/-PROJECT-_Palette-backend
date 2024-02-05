@@ -19,3 +19,7 @@ logging:
     org.hibernate:
       SQL: DEBUG
       type: TRACE
+
+jwt:
+  secret:
+    key: "palette__super_secret_key_jwt_version_1"
