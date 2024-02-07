@@ -2,12 +2,16 @@ package com.palette.back_end.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
 @Builder
+@DynamicInsert
+@DynamicUpdate
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "portfolio_pictures")
