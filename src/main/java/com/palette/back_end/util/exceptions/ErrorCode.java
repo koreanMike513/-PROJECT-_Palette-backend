@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatusCode;
 @AllArgsConstructor
 public enum ErrorCode {
 
+  INVALID(HttpStatus.BAD_REQUEST, "INVALID"),
+
   NOT_FOUND(HttpStatus.NOT_FOUND, "NOT FOUND ERROR"),
 
   UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED ERROR");

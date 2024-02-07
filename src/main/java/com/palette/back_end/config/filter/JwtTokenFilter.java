@@ -33,14 +33,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     if (header == null || !header.startsWith("Bearer ")) {
       log.error("[JwtTokenFilter.doFilterInternal]: Error Occurred Header is Empty");
       filterChain.doFilter(request, response);
+
       return;
     }
 
     String token = header.split(" ")[1].trim();
-
-    log.debug("Token: {}", token);
-    log.debug("Is token expired: {}", JwtTokenUtils.isExpired(token, key));
-
 
     if (JwtTokenUtils.isExpired(token, key)) {
       log.error("[JwtTokenFilter.doFilterInternal]: Error Occurred key has expired");
@@ -50,9 +47,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     }
 
     Long userId = JwtTokenUtils.getUserId(token, key);
-    User user = userRepository.findById(userId).orElseThrow(() -> new PaletteException(ErrorCode.NOT_FOUND));
-    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null);
-    SecurityContextHolder.getContext().setAuthentication(authentication);
+    User user = userRepository.findById(userId).orElse(null);
+
+    if (user != null) {
+      UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null);
+      SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
 
     filterChain.doFilter(request, response);
   }
