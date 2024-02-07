@@ -44,4 +44,9 @@ public class User extends BaseEntity {
 
   @OneToMany(mappedBy = "user")
   private List<Education> educations;
+
+  public User update(String email) {
+    this.email = email;
+    return this;
+  }
 }
