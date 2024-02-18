@@ -43,6 +43,14 @@ spring:
             token_uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
+  cloud:
+    config:
+      server:
+        awss3:
+          access-key: ${AWS_ACCESS_KEY}
+          secret-key: ${AWS_SECRET_KEY}
+          region: ${AWS_REGION}
+          bucket: ${AWS_BUCKET_NAME}
 jwt:
   secret:
     key: ${JWT_SECRET_KEY}
