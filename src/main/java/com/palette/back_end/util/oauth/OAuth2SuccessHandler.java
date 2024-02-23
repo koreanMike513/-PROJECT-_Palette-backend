@@ -27,7 +27,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
     OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-    User user = UserMapper.of(oAuth2User.getAttributes());// user 바뀐다.
+    User user = UserMapper.of(oAuth2User);// user 바뀐다.
     String token = JwtTokenUtils.generateToken(user, SECRET_KEY); // string 으로 받는다
 
     response.sendRedirect(getRedirectionURI(token));
