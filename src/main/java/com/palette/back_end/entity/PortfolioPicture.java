@@ -29,6 +29,10 @@ public class PortfolioPicture extends BaseEntity {
   private Portfolio portfolio;
 
   @Setter
+  @Column(columnDefinition = "VARCHAR(1000) NOT NULL COMMENT '파일명'")
+  private String fileName;
+
+  @Setter
   @Column(columnDefinition = "VARCHAR(1000) NOT NULL COMMENT '주소'")
   private String url;
 }

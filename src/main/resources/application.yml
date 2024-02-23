@@ -21,6 +21,8 @@ spring:
           google:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: http://localhost:8080/login/oauth2/code/google
+            scope: email, profile
           naver:
             client-id: ${NAVER_CLIENT_ID}
             client-secret: ${NAVER_CLIENT_SECRET}
@@ -43,6 +45,11 @@ spring:
             token_uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
+
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
   cloud:
     config:
       server:
@@ -65,6 +72,8 @@ logging:
 
 oauth:
   failure:
-    url: localhost:8080/api/v1/auth/fail
+    url: https://localhost:8080/api/v1/auth/fail
   redirect:
-    url: localhost:8080/api/v1/auth/success
+    url: https://localhost:8080/api/v1/auth/success
+
+

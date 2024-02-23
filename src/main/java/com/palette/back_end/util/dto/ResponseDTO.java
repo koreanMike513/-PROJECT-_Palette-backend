@@ -21,6 +21,10 @@ public class ResponseDTO<T> {
     return new ResponseDTO<>(SUCCESS, result);
   }
 
+  public static <T> ResponseDTO<T> success() {
+    return new ResponseDTO<>(SUCCESS, null);
+  }
+
   public static <T> ResponseDTO<T> error(T ErrorResponse) {
     return new ResponseDTO<>(ERROR, ErrorResponse);
   }

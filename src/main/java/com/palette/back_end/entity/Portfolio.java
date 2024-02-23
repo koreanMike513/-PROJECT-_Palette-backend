@@ -28,7 +28,7 @@ public class Portfolio extends BaseEntity {
   private Long portfolioId;
 
   @ManyToOne
-  @JoinColumn(name = "artist_id")
+  @JoinColumn(name = "user_id")
   private User user;
 
   @Setter
@@ -40,7 +40,7 @@ public class Portfolio extends BaseEntity {
   private String description;
 
   @Setter
-  @OneToMany(mappedBy = "portfolio")
+  @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL)
   private List<PortfolioPicture> portfolioPictures;
 
   @Setter
