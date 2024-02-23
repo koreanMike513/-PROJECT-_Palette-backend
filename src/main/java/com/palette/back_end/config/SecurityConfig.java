@@ -5,7 +5,6 @@ import com.palette.back_end.config.entrypoint.CustomAccessDeniedEntryPoint;
 import com.palette.back_end.config.entrypoint.CustomAuthenticationEntryPoint;
 import com.palette.back_end.config.filter.JwtTokenFilter;
 import com.palette.back_end.repository.UserRepository;
-
 import com.palette.back_end.util.oauth.CustomOAuth2UserService;
 import com.palette.back_end.util.oauth.OAuth2FailureHandler;
 import com.palette.back_end.util.oauth.OAuth2SuccessHandler;
@@ -22,7 +21,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -53,19 +51,19 @@ public class SecurityConfig {
             .sessionManagement(s -> s
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(au -> au
-                    .requestMatchers("api/v1", "/login").permitAll()
+                    .requestMatchers("api/v1/auth/*", "/api/v1/login").permitAll()
                     .anyRequest().authenticated())
             .exceptionHandling(ea -> ea
                     .accessDeniedHandler(new CustomAccessDeniedEntryPoint())
                     .authenticationEntryPoint(new CustomAuthenticationEntryPoint()))
             .oauth2Login(oa -> oa
-                .loginPage("/login")
+                .loginPage("/api/v1/login")
+                .userInfoEndpoint(ua -> ua
+                    .userService(customOAuth2UserService))
                 .authorizationEndpoint(oe -> oe
                     .baseUri("/oauth2/authorize"))
                 .successHandler(oAuth2SuccessHandler)
-                .failureHandler(oAuth2FailureHandler)
-                .userInfoEndpoint(ua -> ua
-                    .userService(customOAuth2UserService)))
+                .failureHandler(oAuth2FailureHandler))
             .addFilterBefore(new JwtTokenFilter(key, userRepository), UsernamePasswordAuthenticationFilter.class)
             .build();
   }
