@@ -3,14 +3,10 @@ package com.palette.back_end.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.palette.back_end.dto.request.EducationRequestDTO;
 import com.palette.back_end.dto.response.EducationResponseDTO;
-import com.palette.back_end.entity.User;
-import com.palette.back_end.repository.UserRepository;
 import com.palette.back_end.service.EducationService;
-import com.palette.back_end.util.JwtTokenUtils;
-import io.jsonwebtoken.Jwt;
+import com.palette.back_end.util.WithMockCustomUser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -21,9 +17,8 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
-
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -31,7 +26,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
@@ -48,95 +43,114 @@ class EducationControllerTest {
   private EducationService educationService;
 
 
-  @Test
-  @WithMockUser
-  void givenRequest_whenPostEducation_returnEducationList() throws Exception {
+  private final EducationRequestDTO mockRequest = EducationRequestDTO.builder()
+      .schoolName("testSchool")
+      .major("Art")
+      .description("testDescription")
+      .startDate(LocalDateTime.now().minusDays(5))
+      .endDate(LocalDateTime.now().minusDays(4))
+      .build();
 
-    when(educationService.createEducation(anyLong(), any(EducationRequestDTO.class)))
-        .thenReturn(EducationResponseDTO.builder().educationId(1L).build());
+  private final EducationResponseDTO mockResponse = EducationResponseDTO.builder()
+      .educationId(1L)
+      .schoolName("testUniversity")
+      .major("testMajor")
+      .description("testDescription")
+      .graduationMark((float) 3.3)
+      .startDate(LocalDateTime.now().minusDays(5))
+      .endDate(LocalDateTime.now().minusDays(3))
+      .build();
+
+
+  @Test
+  @WithMockCustomUser
+  void givenRequest_whenPostEducation_returnEducationList() throws Exception {
+    when(educationService.postEducation(anyLong(), any(EducationRequestDTO.class)))
+        .thenReturn(mockResponse);
 
     mockMvc.perform(post("/api/v1/education")
             .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(EducationRequestDTO.builder().build())))
-        .andExpect(status().isOk()) // Expecting HTTP status code 200 OK
-        .andReturn();
+            .content(objectMapper.writeValueAsString(mockResponse)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.code").value("SUCCESS"))
+        .andExpect(jsonPath("$.result").exists());
   }
 
   @Test
   @WithAnonymousUser
-  void givenRequest_whenPostEducation_throwException() throws Exception {
+  void givenRequest_whenPostEducationAndInvalidUser_throwException() throws Exception {
 
-    when(educationService.createEducation(anyLong(), any(EducationRequestDTO.class)))
-        .thenReturn(EducationResponseDTO.builder().educationId(1L).build());
+    when(educationService.postEducation(anyLong(), any(EducationRequestDTO.class)))
+        .thenReturn(mockResponse);
 
     mockMvc.perform(post("/api/v1/education")
             .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(EducationRequestDTO.builder().build())))
-        .andExpect(status().isUnauthorized())
-        .andReturn();
+            .content(objectMapper.writeValueAsString(mockRequest)))
+        .andExpect(status().isUnauthorized());
   }
 
 
   @Test
-  @WithMockUser
+  @WithMockCustomUser
   void givenRequest_whenGetEducations_returnEducationList() throws Exception {
 
     when(educationService.getEducations(anyLong()))
-        .thenReturn(List.of(EducationResponseDTO.builder().educationId(1L).build()));
+        .thenReturn(List.of(mockResponse));
 
     mockMvc.perform(get("/api/v1/education")
             .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(EducationRequestDTO.builder().build())))
-        .andExpect(status().isOk()) // Expecting HTTP status code 200 OK
-        .andReturn();
+            .content(objectMapper.writeValueAsString(mockRequest)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.code").value("SUCCESS"))
+        .andExpect(jsonPath("$.result").exists());
   }
 
   @Test
   @WithAnonymousUser
-  void givenRequest_whenGetEducations_throwException() throws Exception {
+  void givenRequest_whenGetEducationsAndInvalidUser_throwException() throws Exception {
 
     when(educationService.getEducations(anyLong()))
-        .thenReturn(List.of(EducationResponseDTO.builder().educationId(1L).build()));
+        .thenReturn(List.of(mockResponse));
 
     mockMvc.perform(get("/api/v1/education")
             .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(EducationRequestDTO.builder().build())))
-        .andExpect(status().isUnauthorized())
-        .andReturn();
+            .content(objectMapper.writeValueAsString(mockRequest)))
+        .andExpect(status().isUnauthorized());
   }
 
   @Test
-  @WithMockUser
+  @WithMockCustomUser
   void givenRequest_whenPutEducation_returnEducationList() throws Exception {
+    Long educationId = 1L;
 
-    when(educationService.putEducation(anyLong(), any(EducationRequestDTO.class)))
+    when(educationService.putEducation(anyLong(), anyLong(), any(EducationRequestDTO.class)))
         .thenReturn(List.of(EducationResponseDTO.builder().educationId(1L).build()));
 
-    mockMvc.perform(put("/api/v1/education")
+    mockMvc.perform(put("/api/v1/education/{educationId}", educationId)
             .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(EducationRequestDTO.builder().build())))
-        .andExpect(status().isOk()) // Expecting HTTP status code 200 OK
-        .andReturn();
+            .content(objectMapper.writeValueAsString(mockRequest)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.code").value("SUCCESS"))
+        .andExpect(jsonPath("$.result").exists());
   }
 
   @Test
   @WithAnonymousUser
-  void givenRequest_whenPutEducation_throwsException() throws Exception {
+  void givenRequest_whenPutEducationAndInvalidUser_throwsException() throws Exception {
 
-    when(educationService.putEducation(anyLong(), any(EducationRequestDTO.class)))
-        .thenReturn(List.of(EducationResponseDTO.builder().educationId(1L).build()));
+    when(educationService.putEducation(anyLong(), anyLong(), any(EducationRequestDTO.class)))
+        .thenReturn(List.of(mockResponse));
 
     mockMvc.perform(put("/api/v1/education")
             .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(EducationRequestDTO.builder().build())))
-        .andExpect(status().isUnauthorized())
-        .andReturn();
+            .content(objectMapper.writeValueAsString(mockRequest)))
+        .andExpect(status().isUnauthorized());
   }
 
   @Test
@@ -146,20 +160,20 @@ class EducationControllerTest {
 
     mockMvc.perform(delete("/api/v1/education/1")
             .with(csrf())
-            .contentType(MediaType.APPLICATION_JSON)
-        ).andDo(print())
-        .andExpect(status().isOk());
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.code").value("SUCCESS"))
+        .andExpect(jsonPath("$.result").doesNotExist());
   }
 
   @Test
   @WithAnonymousUser
-  void givenRequest_whenDeleteEducation_throwsException() throws Exception {
+  void givenRequest_whenDeleteEducationAndInvalidUser_throwsException() throws Exception {
     doNothing().when(educationService).deleteEducation(anyLong());
 
     mockMvc.perform(delete("/api/v1/education/1")
             .with(csrf())
-            .contentType(MediaType.APPLICATION_JSON)
-        ).andDo(print())
+            .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isUnauthorized());
   }
 }

@@ -1,8 +1,11 @@
 package com.palette.back_end.dto.request;
 
-import com.palette.back_end.dto.response.EducationResponseDTO;
 import com.palette.back_end.entity.Education;
 import com.palette.back_end.entity.User;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -14,23 +17,29 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class EducationRequestDTO {
 
-  private Long educationId;
-
+  @NotBlank(message = "school name cannot be blank")
+  @Size(max = 55, message = "school name has to be under 55 characters long")
   private String schoolName;
 
+  @NotBlank(message = "major cannot be blank")
   private String major;
 
+  @Size(max = 500, message = "description has to be under 500 characters long")
   private String description;
 
+  @NotNull(message = "graduationMark cannot be null")
   private float graduationMark;
 
+  @NotNull(message = "startDate cannot be null")
+  @PastOrPresent(message = "startDate cannot be future")
   private LocalDateTime startDate;
 
+  @NotNull(message = "endDate cannot be null")
+  @PastOrPresent(message = "endDate cannot be future")
   private LocalDateTime endDate;
 
   public static Education toEntity(User user, EducationRequestDTO request) {
     return Education.builder()
-        .educationId(request.getEducationId())
         .user(user)
         .schoolName(request.getSchoolName())
         .major(request.getMajor())
