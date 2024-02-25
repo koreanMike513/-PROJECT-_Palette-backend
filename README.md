@@ -1,5 +1,7 @@
 # Project Palette
 
+![zhang-xinxin-cWY499Ma1SQ-unsplash](https://github.com/koreanMike513/PROJECT-_Palette-backend/assets/104866923/34b51856-bf15-47e4-bb62-bfecc74dbbcb)
+
 ## 🧐 What is Palette?
 
 ```
