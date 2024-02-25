@@ -31,12 +31,12 @@ public class EducationService {
 
     return educations.stream()
         .map(EducationResponseDTO::from)
-        .sorted(Comparator.comparing(EducationResponseDTO::getStartDate))
+        .sorted(Comparator.comparing(EducationResponseDTO::getEndDate).reversed())
         .collect(Collectors.toList());
   }
 
   @Transactional
-  public EducationResponseDTO createEducation(Long userId, EducationRequestDTO request) {
+  public EducationResponseDTO postEducation(Long userId, EducationRequestDTO request) {
     User user = findUserById(userId);
     Education education = EducationRequestDTO.toEntity(user, request);
 
@@ -46,8 +46,8 @@ public class EducationService {
   }
 
   @Transactional
-  public List<EducationResponseDTO> putEducation(Long userId, EducationRequestDTO request) {
-    Education education = educationRepository.findById(request.getEducationId()).orElseThrow(
+  public List<EducationResponseDTO> putEducation(Long userId, Long educationId, EducationRequestDTO request) {
+    Education education = educationRepository.findById(educationId).orElseThrow(
         () -> new PaletteException(ErrorCode.NOT_FOUND));
 
     education.setSchoolName(request.getSchoolName());

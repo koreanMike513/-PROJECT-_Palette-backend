@@ -5,6 +5,7 @@ import com.palette.back_end.dto.response.EducationResponseDTO;
 import com.palette.back_end.entity.User;
 import com.palette.back_end.service.EducationService;
 import com.palette.back_end.util.dto.ResponseDTO;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -20,25 +21,27 @@ public class EducationController {
 
   @GetMapping
   public ResponseDTO<List<EducationResponseDTO>> getEducations(Authentication authentication) {
-    User user = (User) authentication.getPrincipal();
-    return ResponseDTO.success(educationService.getEducations(user.getUserId()));
+    Long userId = ((User) authentication.getPrincipal()).getUserId();
+    return ResponseDTO.success(educationService.getEducations(userId));
   }
 
   @PostMapping
-  public ResponseDTO<EducationResponseDTO> createEducation(@RequestBody EducationRequestDTO request, Authentication authentication) {
-    User user = (User) authentication.getPrincipal();
-    return ResponseDTO.success(educationService.createEducation(user.getUserId(), request));
+  public ResponseDTO<EducationResponseDTO> postEducation(@Valid @RequestBody EducationRequestDTO request,
+                                                           Authentication authentication) {
+    Long userId = ((User) authentication.getPrincipal()).getUserId();
+    return ResponseDTO.success(educationService.postEducation(userId, request));
   }
 
-  @PutMapping
-  public ResponseDTO<List<EducationResponseDTO>> putEducation(@RequestBody EducationRequestDTO request, Authentication authentication) {
-    User user = (User) authentication.getPrincipal();
-    return ResponseDTO.success(educationService.putEducation(user.getUserId(), request));
+  @PutMapping("/{educationId}")
+  public ResponseDTO<List<EducationResponseDTO>> putEducation(@PathVariable Long educationId,
+                                                              @Valid @RequestBody EducationRequestDTO request, Authentication authentication) {
+    Long userId = ((User) authentication.getPrincipal()).getUserId();
+    return ResponseDTO.success(educationService.putEducation(userId, educationId, request));
   }
 
   @DeleteMapping("/{educationId}")
   public ResponseDTO<Void> deleteEducation(@PathVariable Long educationId) {
     educationService.deleteEducation(educationId);
-    return ResponseDTO.success(null);
+    return ResponseDTO.success();
   }
 }

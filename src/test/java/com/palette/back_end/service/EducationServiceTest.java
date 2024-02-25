@@ -8,7 +8,6 @@ import com.palette.back_end.repository.EducationRepository;
 import com.palette.back_end.repository.UserRepository;
 import com.palette.back_end.util.exceptions.ErrorCode;
 import com.palette.back_end.util.exceptions.PaletteException;
-import jakarta.annotation.security.PermitAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,8 +19,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,42 +36,57 @@ class EducationServiceTest {
   @InjectMocks
   EducationService educationService;
 
+  private final Education mockEducation1 = Education.builder()
+      .educationId(1L)
+      .schoolName("testUniversity")
+      .major("Art")
+      .description("testDescription")
+      .graduationMark((float) 3.3)
+      .startDate(LocalDateTime.now().minusDays(5))
+      .endDate(LocalDateTime.now().minusDays(3))
+      .build();
+
+  private final Education mockEducation2 = Education.builder()
+      .educationId(2L)
+      .schoolName("testUniversity")
+      .major("Economics")
+      .description("testDescription")
+      .graduationMark((float) 3.7)
+      .startDate(LocalDateTime.now().minusDays(3))
+      .endDate(LocalDateTime.now().minusDays(1))
+      .build();
+
+  private final User mockUser = User.builder()
+      .userId(1L)
+      .educations(List.of(mockEducation1, mockEducation2))
+      .build();
+
+  private final EducationRequestDTO mockRequest = EducationRequestDTO.builder()
+      .schoolName("testSchool")
+      .major("Art")
+      .description("testDescription")
+      .startDate(LocalDateTime.now().minusDays(5))
+      .endDate(LocalDateTime.now().minusDays(4))
+      .build();
+
   @Test
   void givenUserIdAndRequest_whenGetEducations_thenReturnEducationLists() {
     // given
-    Education education = Education.builder()
-        .educationId(1L)
-        .major("Art")
-        .build();
-
-    User user = User.builder()
-        .userId(1L)
-        .educations(List.of(
-            Education.builder()
-                .educationId(1L)
-                .startDate(LocalDateTime.now())
-                .build(),
-            Education.builder()
-                .startDate(LocalDateTime.now().minusDays(1))
-                .educationId(2L)
-                .build()
-        ))
-        .build();
-
-    when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+    when(userRepository.findById(anyLong())).thenReturn(Optional.of(mockUser));
 
     // when
     List<EducationResponseDTO> result = educationService.getEducations(1L);
 
     // then
     assert(result.size() == 2);
-    assert(result.get(0).getEducationId()).equals(2L);
+    System.out.println(result.get(1).getEducationId());
     assert(result.get(1).getEducationId()).equals(1L);
+    assert(result.get(0).getEducationId()).equals(2L);
   }
 
   @Test
-  void givenUserIdAndRequest_whenUserNotFound_thenThrowException() {
-
+  void givenUserIdAndRequest_whenGetEducationsAndUserNotFound_thenThrowException() {
+    // given
     when(userRepository.findById(anyLong())).thenThrow(new PaletteException(ErrorCode.NOT_FOUND));
 
     // when
@@ -84,63 +99,27 @@ class EducationServiceTest {
   }
 
   @Test
-  void givenUserIdAndRequest_whenCreateEducation_thenSaveEducation() {
+  void givenUserIdAndRequest_whenPostEducation_thenSaveEducation() {
     // given
-    User user = User.builder()
-        .userId(1L)
-        .educations(List.of(
-            Education.builder()
-                .educationId(1L)
-                .major("Art")
-                .startDate(LocalDateTime.now())
-                .build(),
-            Education.builder()
-                .startDate(LocalDateTime.now().minusDays(1))
-                .major("Economics")
-                .educationId(2L)
-                .build()
-        ))
-        .build();
-
-    Education education = Education.builder()
-        .educationId(1L)
-        .major("Art")
-        .build();
-
-    EducationRequestDTO request = EducationRequestDTO.builder()
-        .educationId(1L)
-        .major("Art")
-        .build();
-
-    when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
-    when(educationRepository.save(any(Education.class))).thenReturn(education);
+    when(userRepository.findById(anyLong())).thenReturn(Optional.of(mockUser));
+    when(educationRepository.save(any(Education.class))).thenReturn(mockEducation1);
 
     // when
-    EducationResponseDTO result = educationService.createEducation(1L, request);
+    EducationResponseDTO result = educationService.postEducation(1L, mockRequest);
 
     // then
-    assert(result.getEducationId()).equals(request.getEducationId());
-    assert(result.getMajor()).equals(request.getMajor());
+    assert(result.getEducationId()).equals(1L);
+    assert(result.getMajor()).equals(mockRequest.getMajor());
   }
 
   @Test
-  void givenUserIdAndRequest_whenUserNotFound_thenThrowError() {
+  void givenValidEducationRequest_whenPostEducationUserNotFound_thenThrowError() {
     // given
-    Education education = Education.builder()
-        .educationId(1L)
-        .major("Art")
-        .build();
-
-    EducationRequestDTO request = EducationRequestDTO.builder()
-        .educationId(1L)
-        .major("Art")
-        .build();
-
     when(userRepository.findById(anyLong())).thenThrow(new PaletteException(ErrorCode.NOT_FOUND));
 
     // when
     PaletteException exception = Assertions.assertThrows(PaletteException.class, () -> {
-      educationService.createEducation(1L, request);
+      educationService.postEducation(1L, mockRequest);
     });
 
     // then
@@ -148,28 +127,16 @@ class EducationServiceTest {
   }
 
   @Test
-  void givenUserIdAndRequest_whenEducationNotFound_thenThrowException() {
+  void givenUserIdAndEducationIdAndValidEducationRequest_whenPutEducationEducationNotFound_thenThrowException() {
     // given
-    Education education = Education.builder()
-        .educationId(1L)
-        .major("Economics")
-        .build();
-
-    User user = User.builder()
-        .userId(1L)
-        .educations(List.of(education))
-        .build();
-
-    EducationRequestDTO request = EducationRequestDTO.builder()
-        .educationId(1L)
-        .major("Art")
-        .build();
+    Long userId = 1L;
+    Long educationId = 1L;
 
     when(educationRepository.findById(anyLong())).thenThrow(new PaletteException(ErrorCode.NOT_FOUND));
 
     // when
     PaletteException exception = Assertions.assertThrows(PaletteException.class, () -> {
-      educationService.putEducation(1L, request);
+      educationService.putEducation(userId, educationId, mockRequest);
     });
 
     // then
@@ -177,25 +144,18 @@ class EducationServiceTest {
   }
 
   @Test
-  void givenUserIdAndRequest_whenPutEducationAndUserNotFound_thenThrowException() {
+  void givenUserIdAndEducationIdAndValidRequest_whenPutEducationAndUserNotFound_thenThrowException() {
     // given
-    Education education = Education.builder()
-        .educationId(1L)
-        .major("Economics")
-        .build();
-
-    EducationRequestDTO request = EducationRequestDTO.builder()
-        .educationId(1L)
-        .major("Art")
-        .build();
+    Long userId = 1L;
+    Long educationId = 1L;
 
     when(userRepository.findById(anyLong())).thenThrow(new PaletteException(ErrorCode.NOT_FOUND));
-    when(educationRepository.findById(anyLong())).thenReturn(Optional.of(education));
-    when(educationRepository.save(any(Education.class))).thenReturn(education);
+    when(educationRepository.findById(anyLong())).thenReturn(Optional.of(mockEducation1));
+    when(educationRepository.save(any(Education.class))).thenReturn(mockEducation1);
 
     // when
     PaletteException exception = Assertions.assertThrows(PaletteException.class, () -> {
-      educationService.putEducation(1L, request);
+      educationService.putEducation(userId, educationId, mockRequest);
     });
 
     // then
@@ -203,29 +163,17 @@ class EducationServiceTest {
   }
 
   @Test
-  void givenUserIdAndRequest_whenPutEducation_thenSaveEducation() {
+  void givenUserIdAndEducationIdAndValidRequest_whenPutEducation_thenSaveEducation() {
     // given
-    Education education = Education.builder()
-        .educationId(1L)
-        .major("Economics")
-        .build();
+    Long userId = 1L;
+    Long educationId = 1L;
 
-    User user = User.builder()
-        .userId(1L)
-        .educations(List.of(education))
-        .build();
-
-    EducationRequestDTO request = EducationRequestDTO.builder()
-        .educationId(1L)
-        .major("Art")
-        .build();
-
-    when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
-    when(educationRepository.findById(anyLong())).thenReturn(Optional.of(education));
-    when(educationRepository.save(any(Education.class))).thenReturn(education);
+    when(userRepository.findById(anyLong())).thenReturn(Optional.of(mockUser));
+    when(educationRepository.findById(anyLong())).thenReturn(Optional.of(mockEducation1));
+    when(educationRepository.save(any(Education.class))).thenReturn(mockEducation1);
 
     // when
-    List<EducationResponseDTO> result = educationService.putEducation(1L, request);
+    List<EducationResponseDTO> result = educationService.putEducation(userId, educationId, mockRequest);
 
     // then
     assertEquals("Art", result.get(0).getMajor());
@@ -234,11 +182,6 @@ class EducationServiceTest {
   @Test
   void givenEducationId_whenDeleteEducation_thenDeleteEducation() {
     // given
-    Education education = Education.builder()
-        .educationId(1L)
-        .major("Arts")
-        .build();
-
     when(educationRepository.findById(anyLong())).thenThrow(new PaletteException(ErrorCode.NOT_FOUND));
 
     // when
